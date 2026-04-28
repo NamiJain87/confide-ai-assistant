@@ -177,7 +177,7 @@ async function callGroq(messages, images = []) {
 
   const model = hasImages
     ? "meta-llama/llama-4-scout-17b-16e-instruct"
-    : "llama-3.3-70b-versatile";
+    : "llama-3.1-8b-instant";
 
   const response = await axios.post(
     "https://api.groq.com/openai/v1/chat/completions",
