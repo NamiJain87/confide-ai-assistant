@@ -40,6 +40,27 @@ export default function App() {
     setActiveMode("chat");
   }
 
+  function downloadChatHistory() {
+    const textContent = messages
+      .filter(m => m.role !== "system")
+      .map(m => {
+        const name = m.role === "user" ? "You" : (botConfig ? botConfig.name : "Confide AI");
+        const time = new Date(m.timestamp || Date.now()).toLocaleString();
+        return `[${time}] ${name}:\n${m.content}\n`;
+      })
+      .join("\n----------------------------------------\n\n");
+
+    const blob = new Blob([textContent], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Confide_Chat_History_${new Date().toLocaleDateString().replace(/\//g, "-")}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
   function renderMode() {
     switch (activeMode) {
       case "youtube":  return <YouTubeMode />;
@@ -120,22 +141,40 @@ export default function App() {
               {botConfig ? "Edit Bot" : "My Bot"}
             </button>
 
-            {/* Clear button — only on chat */}
+            {/* Clear & Save buttons — only on chat */}
             {activeMode === "chat" && (
-              <button
-                id="clear-chat-button"
-                className="header__clear-btn"
-                onClick={clearChat}
-                aria-label="Clear conversation"
-                title="Clear conversation"
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="13" height="13">
-                  <polyline points="3 6 5 6 21 6"/>
-                  <path d="M19 6l-1 14H6L5 6"/>
-                  <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
-                </svg>
-                Clear
-              </button>
+              <div style={{ display: "flex", gap: "8px" }}>
+                <button
+                  id="save-chat-button"
+                  className="header__clear-btn"
+                  onClick={downloadChatHistory}
+                  aria-label="Save conversation"
+                  title="Save conversation"
+                  style={{ background: "var(--surface-hover)", borderColor: "var(--glass-border)", color: "var(--text)" }}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="13" height="13">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  Save
+                </button>
+
+                <button
+                  id="clear-chat-button"
+                  className="header__clear-btn"
+                  onClick={clearChat}
+                  aria-label="Clear conversation"
+                  title="Clear conversation"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="13" height="13">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6l-1 14H6L5 6"/>
+                    <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
+                  </svg>
+                  Clear
+                </button>
+              </div>
             )}
           </div>
         </header>
