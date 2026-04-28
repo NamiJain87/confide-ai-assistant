@@ -28,6 +28,7 @@ function detectMood(text) {
 
 const STORAGE_KEY = "confide_history";
 const MOOD_KEY    = "confide_mood";
+const SESSIONS_KEY = "confide_sessions";
 
 function makeDefaultMessages() {
   return [
@@ -39,9 +40,30 @@ function makeDefaultMessages() {
   ];
 }
 
+function generateId() {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+}
 
 export function useChat() {
-  const [messages, setMessages] = useState(makeDefaultMessages);
+  const [sessions, setSessions] = useState(() => {
+    try {
+      const stored = localStorage.getItem(SESSIONS_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [currentSessionId, setCurrentSessionId] = useState(() => {
+    if (sessions.length > 0) return sessions[0].id;
+    return generateId();
+  });
+
+  const [messages, setMessages] = useState(() => {
+    if (sessions.length > 0) return sessions[0].messages;
+    return makeDefaultMessages();
+  });
+
   const [loading,  setLoading]  = useState(false);
   const [error,    setError]    = useState(null);
   const [mood,     setMood]     = useState("neutral");
@@ -55,6 +77,33 @@ export function useChat() {
   }
 
 
+
+  // Save sessions to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions));
+  }, [sessions]);
+
+  // Update current session whenever messages change
+  useEffect(() => {
+    setSessions(prev => {
+      const existingIndex = prev.findIndex(s => s.id === currentSessionId);
+      const title = messages.length > 1 ? messages[1].content.substring(0, 30) + (messages[1].content.length > 30 ? "..." : "") : "New Chat";
+      const sessionData = {
+        id: currentSessionId,
+        title,
+        messages,
+        date: Date.now()
+      };
+
+      if (existingIndex >= 0) {
+        const newSessions = [...prev];
+        newSessions[existingIndex] = sessionData;
+        return newSessions;
+      } else {
+        return [sessionData, ...prev];
+      }
+    });
+  }, [messages, currentSessionId]);
 
   const sendMessage = useCallback(
     async (userText, images = []) => {
@@ -123,9 +172,45 @@ export function useChat() {
     setMessages(fresh);
     setError(null);
     setMood("neutral");
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(fresh));
-    localStorage.setItem(MOOD_KEY, "neutral");
+    setCurrentSessionId(generateId());
   }, []);
 
-  return { messages, loading, error, mood, sendMessage, clearChat, setBotConfig };
+  const loadSession = useCallback((id) => {
+    const session = sessions.find(s => s.id === id);
+    if (session) {
+      setMessages(session.messages);
+      setCurrentSessionId(id);
+      setError(null);
+    }
+  }, [sessions]);
+
+  const deleteSession = useCallback((id) => {
+    setSessions(prev => {
+      const filtered = prev.filter(s => s.id !== id);
+      if (currentSessionId === id) {
+        if (filtered.length > 0) {
+          setMessages(filtered[0].messages);
+          setCurrentSessionId(filtered[0].id);
+        } else {
+          setMessages(makeDefaultMessages());
+          setCurrentSessionId(generateId());
+        }
+      }
+      return filtered;
+    });
+  }, [currentSessionId]);
+
+  return { 
+    messages, 
+    loading, 
+    error, 
+    mood, 
+    sendMessage, 
+    clearChat, 
+    setBotConfig,
+    sessions,
+    currentSessionId,
+    loadSession,
+    deleteSession
+  };
 }

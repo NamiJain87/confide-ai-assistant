@@ -22,10 +22,14 @@ const MOOD_LABELS = {
 };
 
 export default function App() {
-  const { messages, loading, error, mood, sendMessage, clearChat, setBotConfig } = useChat();
+  const { 
+    messages, loading, error, mood, sendMessage, clearChat, setBotConfig,
+    sessions, currentSessionId, loadSession, deleteSession
+  } = useChat();
 
   const [activeTheme,     setActiveTheme]     = useState("bright-blossom");
   const [showBotModal,    setShowBotModal]    = useState(false);
+  const [showSidebar,     setShowSidebar]     = useState(false);
   const [botConfig,       setBotConfigState]  = useState(null);
   const [activeMode,      setActiveMode]      = useState("chat");
 
@@ -104,6 +108,14 @@ export default function App() {
         {/* ── Header ── */}
         <header className="header">
           <div className="header__left">
+            <button 
+              className="header__menu-btn" 
+              onClick={() => setShowSidebar(true)}
+              aria-label="Open chat history"
+              style={{ background: "transparent", border: "none", fontSize: "24px", color: "var(--text)", cursor: "pointer", marginRight: "10px" }}
+            >
+              ☰
+            </button>
             <div className="header__orb" aria-hidden="true">
               <div className="header__orb-inner">
                 {displayAvatar && <span className="header__bot-avatar">{displayAvatar}</span>}
@@ -164,20 +176,62 @@ export default function App() {
                   id="clear-chat-button"
                   className="header__clear-btn"
                   onClick={clearChat}
-                  aria-label="Clear conversation"
-                  title="Clear conversation"
+                  aria-label="New chat"
+                  title="New chat"
                 >
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="13" height="13">
-                    <polyline points="3 6 5 6 21 6"/>
-                    <path d="M19 6l-1 14H6L5 6"/>
-                    <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
                   </svg>
-                  Clear
+                  New Chat
                 </button>
               </div>
             )}
           </div>
         </header>
+
+        {/* ── Sidebar ── */}
+        {showSidebar && (
+          <div className="sidebar-overlay" onClick={() => setShowSidebar(false)} />
+        )}
+        <div className={`sidebar ${showSidebar ? "sidebar--open" : ""}`}>
+          <div className="sidebar__header">
+            <h2>Chat History</h2>
+            <button className="sidebar__close" onClick={() => setShowSidebar(false)}>✕</button>
+          </div>
+          <div className="sidebar__list">
+            {sessions.length === 0 && <div style={{padding: "20px", color: "var(--text-muted)", fontSize: "14px"}}>No past chats</div>}
+            {sessions.map(s => (
+              <div 
+                key={s.id} 
+                className={`sidebar__item ${s.id === currentSessionId ? "sidebar__item--active" : ""}`}
+                onClick={() => {
+                  loadSession(s.id);
+                  if (window.innerWidth < 768) setShowSidebar(false);
+                }}
+              >
+                <div className="sidebar__item-text">
+                  <div className="sidebar__item-title">{s.title}</div>
+                  <div className="sidebar__item-date">{new Date(s.date).toLocaleDateString()}</div>
+                </div>
+                <button 
+                  className="sidebar__item-delete" 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteSession(s.id);
+                  }}
+                  title="Delete chat"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="16" height="16">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6l-1 14H6L5 6"/>
+                    <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
+                  </svg>
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
 
         {/* ── Active Mode ── */}
         <div className="mode-content">
