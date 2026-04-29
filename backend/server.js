@@ -185,7 +185,7 @@ async function callGroq(messages, images = []) {
       model,
       messages:    finalMessages,
       temperature: 0.75,
-      max_tokens:  4096,
+      max_tokens:  1500,
     },
     {
       headers: {

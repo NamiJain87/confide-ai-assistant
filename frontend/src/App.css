@@ -934,6 +934,13 @@ body {
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    20. MODE PANEL BASE
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.split-mode { flex: 1; display: flex; flex-direction: row; overflow: hidden; }
+.split-mode__chat { flex: 1; display: flex; flex-direction: column; border-left: 1px solid var(--glass-border); background: var(--surface); min-width: 320px; }
+@media (max-width: 768px) {
+  .split-mode { flex-direction: column; }
+  .split-mode__chat { border-left: none; border-top: 1px solid var(--glass-border); flex: 1.5; }
+}
+
 .mode-panel { flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:14px; }
 .mode-panel__header { display:flex; flex-direction:column; gap:2px; }
 .mode-panel__title  { font-size:18px; font-weight:700; color:var(--text); }

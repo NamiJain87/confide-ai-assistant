@@ -67,6 +67,7 @@ export function useChat() {
   const [loading,  setLoading]  = useState(false);
   const [error,    setError]    = useState(null);
   const [mood,     setMood]     = useState("neutral");
+  const [memoryMode, setMemoryMode] = useState(true);
 
   // botConfig ref so sendMessage always has access to the latest value
   // without being a dependency (avoids stale closure without re-creating cb)
@@ -126,7 +127,15 @@ export function useChat() {
       setLoading(true);
 
       // Strip UI-only fields before sending to the API
-      const apiMessages = updatedMessages.map(({ role, content }) => ({ role, content }));
+      let apiMessages = updatedMessages.map(({ role, content }) => ({ role, content }));
+
+      if (memoryMode) {
+        if (apiMessages.length > 4) {
+          apiMessages = apiMessages.slice(-4);
+        }
+      } else {
+        apiMessages = [apiMessages[apiMessages.length - 1]];
+      }
 
       try {
         const body = { messages: apiMessages };
@@ -211,6 +220,8 @@ export function useChat() {
     sessions,
     currentSessionId,
     loadSession,
-    deleteSession
+    deleteSession,
+    memoryMode,
+    setMemoryMode
   };
 }

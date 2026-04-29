@@ -68,7 +68,15 @@ export default function App() {
   function renderMode() {
     switch (activeMode) {
       case "youtube":  return <YouTubeMode />;
-      case "music":    return <MusicMode mood={mood} />;
+      case "music":    return (
+        <div className="split-mode">
+          <MusicMode mood={mood} />
+          <div className="split-mode__chat">
+            <ChatWindow messages={messages} loading={loading} error={error} />
+            <InputBar onSend={sendMessage} loading={loading} />
+          </div>
+        </div>
+      );
       case "docs":     return <DocsMode />;
       case "ppt":      return <PPTMode />;
       case "tasks":    return <TasksMode />;
@@ -104,7 +112,7 @@ export default function App() {
         />
       )}
 
-      <div className="app" data-mood={mood}>
+      <div className="app">
         {/* ── Header ── */}
         <header className="header">
           <div className="header__left">
