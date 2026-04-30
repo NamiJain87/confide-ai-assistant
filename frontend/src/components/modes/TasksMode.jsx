@@ -42,27 +42,53 @@ function playReminderMusic() {
 const activeTimeouts = {};
 
 function scheduleNotif(task) {
-  if (!task.deadline || Notification.permission !== "granted" || task.status === "done") return;
-  if (activeTimeouts[task.id]) clearTimeout(activeTimeouts[task.id]);
+  if (Notification.permission !== "granted" || task.status === "done") return;
+  
+  if (activeTimeouts[`${task.id}_start`]) clearTimeout(activeTimeouts[`${task.id}_start`]);
+  if (activeTimeouts[`${task.id}_end`]) clearTimeout(activeTimeouts[`${task.id}_end`]);
 
-  const ms = new Date(task.deadline).getTime() - Date.now();
-  if (ms <= 0) return;
+  const now = Date.now();
 
-  activeTimeouts[task.id] = setTimeout(() => {
-    new Notification(`⏰ Task Due: ${task.text}`, {
-      body: "It's time to complete this task! 💪",
-      icon: "/favicon.ico",
-    });
-    if (navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 300]);
-    playReminderMusic();
-    delete activeTimeouts[task.id];
-  }, ms);
+  // Advance reminder (10 mins before start)
+  if (task.startTime) {
+    const startMs = new Date(task.startTime).getTime();
+    const advanceMs = startMs - (10 * 60 * 1000) - now;
+    if (advanceMs > 0) {
+      activeTimeouts[`${task.id}_start`] = setTimeout(() => {
+        new Notification(`⏰ Heads up!`, {
+          body: `Your task '${task.text}' starts in 10 minutes!`,
+          icon: "/favicon.ico",
+        });
+        if (navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 300]);
+        playReminderMusic();
+        delete activeTimeouts[`${task.id}_start`];
+      }, advanceMs);
+    }
+  }
+
+  // End time reminder
+  const finalDeadline = task.endTime || task.deadline; // Backwards compatible
+  if (finalDeadline) {
+    const endMs = new Date(finalDeadline).getTime() - now;
+    if (endMs > 0) {
+      activeTimeouts[`${task.id}_end`] = setTimeout(() => {
+        new Notification(`⏳ Time's Up!`, {
+          body: `Deadline reached for: ${task.text}`,
+          icon: "/favicon.ico",
+        });
+        if (navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 300]);
+        playReminderMusic();
+        delete activeTimeouts[`${task.id}_end`];
+      }, endMs);
+    }
+  }
 }
 
 export default function TasksMode() {
   const [tasks,    setTasks]    = useState(loadTasks);
   const [input,    setInput]    = useState("");
-  const [deadline, setDeadline] = useState("");
+  const [startTime, setStartTime] = useState("");
+  const [endTime,   setEndTime]   = useState("");
   const [priority, setPriority] = useState("medium");
   const [filter,   setFilter]   = useState("all");
   const [aiLoading, setAiLoading] = useState(false);
@@ -98,20 +124,22 @@ export default function TasksMode() {
     if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
   }
 
-  function addTask(text = input, dl = deadline, pri = priority) {
+  function addTask(text = input, start = startTime, end = endTime, pri = priority) {
     if (!text.trim()) return;
     const task = {
       id:        Date.now(),
       text:      text.trim(),
       status:    "todo",
       priority:  pri,
-      deadline:  dl,
+      startTime: start,
+      endTime:   end,
       createdAt: Date.now(),
     };
     setTasks((prev) => [task, ...prev]);
     scheduleNotif(task);
     setInput("");
-    setDeadline("");
+    setStartTime("");
+    setEndTime("");
     setPriority("medium");
   }
 
@@ -180,11 +208,18 @@ export default function TasksMode() {
         </select>
         <div className="tasks__item-body">
           <span className="tasks__item-text">{task.text}</span>
-          {task.deadline && (
-            <span className="tasks__item-deadline">
-              ⏰ {new Date(task.deadline).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}
-            </span>
-          )}
+          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "2px" }}>
+            {task.startTime && (
+              <span className="tasks__item-deadline">
+                ▶️ Start: {new Date(task.startTime).toLocaleString([], { dateStyle: "short", timeStyle: "short" })}
+              </span>
+            )}
+            {(task.endTime || task.deadline) && (
+              <span className="tasks__item-deadline">
+                ⏹️ End: {new Date(task.endTime || task.deadline).toLocaleString([], { dateStyle: "short", timeStyle: "short" })}
+              </span>
+            )}
+          </div>
         </div>
         <span className="tasks__item-pri" style={{ background: PRIORITY_COLORS[task.priority] + "33", color: PRIORITY_COLORS[task.priority] }}>
           {task.priority}
@@ -210,14 +245,25 @@ export default function TasksMode() {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && addTask()}
         />
-        <div className="tasks__add-row">
-          <input
-            type="datetime-local"
-            className="tasks__deadline-input"
-            value={deadline}
-            onChange={(e) => setDeadline(e.target.value)}
-            title="Set deadline"
-          />
+        <div className="tasks__add-row" style={{ flexWrap: "wrap" }}>
+          <div className="tasks__add-dates" style={{ display: "flex", gap: "8px", flex: "1 1 auto" }}>
+            <input
+              type="datetime-local"
+              className="tasks__deadline-input"
+              value={startTime}
+              onChange={(e) => setStartTime(e.target.value)}
+              title="Start Time"
+              style={{ flex: 1, minWidth: "130px" }}
+            />
+            <input
+              type="datetime-local"
+              className="tasks__deadline-input"
+              value={endTime}
+              onChange={(e) => setEndTime(e.target.value)}
+              title="End Time"
+              style={{ flex: 1, minWidth: "130px" }}
+            />
+          </div>
           <div className="tasks__priority-btns">
             {["high","medium","low"].map((p) => (
               <button
