@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useChat } from "./hooks/useChat";
 import ChatWindow from "./components/ChatWindow";
 import InputBar from "./components/InputBar";
