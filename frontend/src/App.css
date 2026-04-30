@@ -917,25 +917,9 @@ body {
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    19. MODE DOCK
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-.mode-dock {
-  display:flex; align-items:center; justify-content:space-around;
-  padding:8px 10px 10px; flex-shrink:0;
-  background:var(--surface); backdrop-filter:blur(24px) saturate(180%);
-  -webkit-backdrop-filter:blur(24px) saturate(180%);
-  border-top:1px solid var(--glass-border); gap:4px;
-}
-.mode-dock__btn {
-  display:flex; flex-direction:column; align-items:center; gap:3px;
-  flex:1; padding:6px 4px; border-radius:12px;
-  background:transparent; border:none; cursor:pointer; transition:all .2s; font-family:var(--font-body);
-}
-.mode-dock__btn:hover { background:var(--surface-hover); }
-.mode-dock__btn--active { background:var(--glow-a); box-shadow:0 0 0 1.5px var(--accent-a); }
-.mode-dock__icon  { font-size:18px; line-height:1; }
-.mode-dock__label { font-size:9px; color:var(--text-muted); letter-spacing:.4px; text-transform:uppercase; }
-.mode-dock__btn--active .mode-dock__label { color:var(--accent-a); font-weight:600; }
+/* Mode dock hidden — navigation moved to sidebar */
+.mode-dock { display: none !important; }
 .mode-content { flex:1; overflow:hidden; display:flex; flex-direction:column; }
-[data-dark="true"] .mode-dock { background:rgba(0,0,0,0.55); border-top-color:rgba(255,255,255,0.08); }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    20. MODE PANEL BASE
@@ -1238,4 +1222,29 @@ body {
   .header__mood-label { display: none; }
   .header__status { padding: 5px 8px; }
 }
+
+/* ── Sidebar: Theme Section ── */
+.sidebar__theme-section { padding: 4px 0 8px 8px; }
+.sidebar__theme-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 1.2px;
+  text-transform: uppercase; color: var(--text-muted);
+  padding: 8px 4px 4px;
+}
+.sidebar__theme-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 2px 0;
+}
+.sidebar__theme-swatch {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 10px; border-radius: 10px;
+  border: 1.5px solid transparent;
+  cursor: pointer; font-family: var(--font-body);
+  font-size: 12px; font-weight: 500; color: var(--text);
+  transition: all 0.2s; text-align: left;
+}
+.sidebar__theme-swatch:hover { border-color: var(--accent-a); transform: scale(1.03); }
+.sidebar__theme-swatch--active {
+  border-color: var(--accent-a) !important;
+  box-shadow: 0 0 0 2px var(--glow-a);
+}
+
 

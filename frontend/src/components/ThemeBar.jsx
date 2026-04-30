@@ -1,10 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 
-const DARK_THEMES = [
+export const DARK_THEMES = [
   {
-    id: "dark-midnight",
-    label: "Midnight",
-    emoji: "🌑",
+    id: "dark-midnight", label: "Midnight", emoji: "🌑",
     vars: {
       "--bg-a": "#0d0d1a", "--bg-b": "#13132b", "--bg-c": "#1a1a3a", "--bg-d": "#0a0a15",
       "--accent-a": "#7c3aed", "--accent-b": "#a855f7",
@@ -15,9 +13,7 @@ const DARK_THEMES = [
     },
   },
   {
-    id: "dark-ocean",
-    label: "Deep Ocean",
-    emoji: "🌊",
+    id: "dark-ocean", label: "Deep Ocean", emoji: "🌊",
     vars: {
       "--bg-a": "#020e1a", "--bg-b": "#051829", "--bg-c": "#07233a", "--bg-d": "#030f1e",
       "--accent-a": "#0ea5e9", "--accent-b": "#06b6d4",
@@ -28,9 +24,7 @@ const DARK_THEMES = [
     },
   },
   {
-    id: "dark-ember",
-    label: "Ember",
-    emoji: "🔥",
+    id: "dark-ember", label: "Ember", emoji: "🔥",
     vars: {
       "--bg-a": "#1a0500", "--bg-b": "#2a0c00", "--bg-c": "#1f0800", "--bg-d": "#120300",
       "--accent-a": "#f97316", "--accent-b": "#ef4444",
@@ -42,11 +36,9 @@ const DARK_THEMES = [
   },
 ];
 
-const BRIGHT_THEMES = [
+export const BRIGHT_THEMES = [
   {
-    id: "bright-blossom",
-    label: "Blossom",
-    emoji: "🌸",
+    id: "bright-blossom", label: "Blossom", emoji: "🌸",
     vars: {
       "--bg-a": "#ffe4f0", "--bg-b": "#ead5ff", "--bg-c": "#d6eeff", "--bg-d": "#ffecd2",
       "--accent-a": "#f43f8e", "--accent-b": "#a855f7",
@@ -57,9 +49,7 @@ const BRIGHT_THEMES = [
     },
   },
   {
-    id: "bright-sky",
-    label: "Sky",
-    emoji: "☁️",
+    id: "bright-sky", label: "Sky", emoji: "☁️",
     vars: {
       "--bg-a": "#dbeafe", "--bg-b": "#e0e7ff", "--bg-c": "#ede9fe", "--bg-d": "#f0f9ff",
       "--accent-a": "#3b82f6", "--accent-b": "#6366f1",
@@ -70,9 +60,7 @@ const BRIGHT_THEMES = [
     },
   },
   {
-    id: "bright-meadow",
-    label: "Meadow",
-    emoji: "🌿",
+    id: "bright-meadow", label: "Meadow", emoji: "🌿",
     vars: {
       "--bg-a": "#d1fae5", "--bg-b": "#a7f3d0", "--bg-c": "#ccfbf1", "--bg-d": "#cffafe",
       "--accent-a": "#10b981", "--accent-b": "#06b6d4",
@@ -83,9 +71,7 @@ const BRIGHT_THEMES = [
     },
   },
   {
-    id: "bright-sunny",
-    label: "Sunny",
-    emoji: "🌻",
+    id: "bright-sunny", label: "Sunny", emoji: "🌻",
     vars: {
       "--bg-a": "#fef9c3", "--bg-b": "#d9f99d", "--bg-c": "#bbf7d0", "--bg-d": "#fde68a",
       "--accent-a": "#eab308", "--accent-b": "#22c55e",
@@ -96,9 +82,7 @@ const BRIGHT_THEMES = [
     },
   },
   {
-    id: "bright-peach",
-    label: "Peach",
-    emoji: "🍑",
+    id: "bright-peach", label: "Peach", emoji: "🍑",
     vars: {
       "--bg-a": "#fff7ed", "--bg-b": "#ffedd5", "--bg-c": "#fef3c7", "--bg-d": "#fde68a",
       "--accent-a": "#f97316", "--accent-b": "#eab308",
@@ -109,9 +93,7 @@ const BRIGHT_THEMES = [
     },
   },
   {
-    id: "bright-rose",
-    label: "Rose",
-    emoji: "🌹",
+    id: "bright-rose", label: "Rose", emoji: "🌹",
     vars: {
       "--bg-a": "#ffe4e6", "--bg-b": "#fecdd3", "--bg-c": "#fed7aa", "--bg-d": "#ffedd5",
       "--accent-a": "#f43f5e", "--accent-b": "#ef4444",
@@ -123,83 +105,22 @@ const BRIGHT_THEMES = [
   },
 ];
 
+export function applyThemeVars(theme, onThemeChange) {
+  if (!theme) return;
+  const root = document.documentElement;
+  Object.entries(theme.vars).forEach(([k, v]) => root.style.setProperty(k, v));
+  const isDark = DARK_THEMES.some((t) => t.id === theme.id);
+  root.setAttribute("data-dark", isDark ? "true" : "false");
+  if (onThemeChange) onThemeChange(theme.id);
+}
+
+// ThemeBar now only handles the initial theme application on mount.
+// All theme UI is inside the sidebar in App.jsx.
 export default function ThemeBar({ activeThemeId, onThemeChange }) {
-  const [open, setOpen] = useState(false);
-
-  function applyTheme(theme) {
-    if (!theme) return;
-    const root = document.documentElement;
-    Object.entries(theme.vars).forEach(([k, v]) => root.style.setProperty(k, v));
-    // Mark dark themes so CSS can fix hardcoded white surfaces
-    const isDark = DARK_THEMES.some((t) => t.id === theme.id);
-    root.setAttribute("data-dark", isDark ? "true" : "false");
-    onThemeChange(theme.id);
-  }
-
   useEffect(() => {
     const defaultTheme = [...DARK_THEMES, ...BRIGHT_THEMES].find(t => t.id === activeThemeId) || BRIGHT_THEMES[0];
-    applyTheme(defaultTheme);
+    applyThemeVars(defaultTheme, onThemeChange);
   }, []);
 
-  return (
-    <>
-      {/* Toggle tab */}
-      <button
-        className="theme-tab"
-        onClick={() => setOpen((o) => !o)}
-        aria-label="Open theme picker"
-        title="Themes & Colors"
-      >
-        <span className="theme-tab__icon">🎨</span>
-        <span className="theme-tab__label">Theme</span>
-      </button>
-
-      {/* Sidebar panel */}
-      <div className={`theme-panel ${open ? "theme-panel--open" : ""}`}>
-        <div className="theme-panel__header">
-          <span>🎨 Choose Your Vibe</span>
-          <button className="theme-panel__close" onClick={() => setOpen(false)}>✕</button>
-        </div>
-
-        <div className="theme-panel__section-label">🌑 Dark Themes</div>
-        <div className="theme-panel__grid">
-          {DARK_THEMES.map((t) => (
-            <button
-              key={t.id}
-              className={`theme-swatch theme-swatch--dark ${activeThemeId === t.id ? "theme-swatch--active" : ""}`}
-              onClick={() => applyTheme(t)}
-              title={t.label}
-              style={{ background: t.vars["--bg-b"] }}
-            >
-              <span className="theme-swatch__emoji">{t.emoji}</span>
-              <span className="theme-swatch__label">{t.label}</span>
-              {activeThemeId === t.id && <span className="theme-swatch__check">✓</span>}
-            </button>
-          ))}
-        </div>
-
-        <div className="theme-panel__divider" />
-
-        <div className="theme-panel__section-label">☀️ Bright Themes</div>
-        <div className="theme-panel__grid theme-panel__grid--2col">
-          {BRIGHT_THEMES.map((t) => (
-            <button
-              key={t.id}
-              className={`theme-swatch ${activeThemeId === t.id ? "theme-swatch--active" : ""}`}
-              onClick={() => applyTheme(t)}
-              title={t.label}
-              style={{ background: `linear-gradient(135deg, ${t.vars["--bg-a"]}, ${t.vars["--bg-b"]})` }}
-            >
-              <span className="theme-swatch__emoji">{t.emoji}</span>
-              <span className="theme-swatch__label">{t.label}</span>
-              {activeThemeId === t.id && <span className="theme-swatch__check">✓</span>}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Backdrop */}
-      {open && <div className="theme-backdrop" onClick={() => setOpen(false)} />}
-    </>
-  );
+  return null; // No UI — managed in sidebar
 }

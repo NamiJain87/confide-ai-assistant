@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useChat } from "./hooks/useChat";
 import ChatWindow from "./components/ChatWindow";
 import InputBar from "./components/InputBar";
-import ThemeBar from "./components/ThemeBar";
+import ThemeBar, { DARK_THEMES, BRIGHT_THEMES, applyThemeVars } from "./components/ThemeBar";
 import CreateBotModal from "./components/CreateBotModal";
 import ModeDock, { MODES } from "./components/ModeDock";
 import YouTubeMode from "./components/modes/YouTubeMode";
@@ -33,6 +33,11 @@ export default function App() {
   const [botConfig,       setBotConfigState]  = useState(null);
   const [activeMode,      setActiveMode]      = useState("chat");
   const [splitScreen,     setSplitScreen]     = useState(false);
+  const [showThemes,      setShowThemes]      = useState(false);
+
+  function handleThemeChange(theme) {
+    applyThemeVars(theme, setActiveTheme);
+  }
 
   const moodInfo    = MOOD_LABELS[mood] || MOOD_LABELS.neutral;
   const displayName = botConfig ? `${botConfig.avatar} ${botConfig.name}` : "Confide";
@@ -237,15 +242,50 @@ export default function App() {
               <span>{botConfig ? "Edit My Bot" : "Create My Bot"}</span>
             </button>
 
+            {/* Theme & Mood */}
             <button
-              className="sidebar__action-btn"
-              onClick={() => setShowSidebar(false)}
-              title="Click the 🎨 tab on the left edge of the screen"
+              className={`sidebar__action-btn ${showThemes ? "sidebar__mode-btn--active" : ""}`}
+              onClick={() => setShowThemes(s => !s)}
             >
               <span>🎨</span>
               <span>Theme &amp; Mood</span>
-              <span className="sidebar__action-hint">← side tab</span>
+              <span className="sidebar__mode-arrow">{showThemes ? "▾" : "▸"}</span>
             </button>
+
+            {showThemes && (
+              <div className="sidebar__theme-section">
+                <div className="sidebar__theme-label">🌑 Dark</div>
+                <div className="sidebar__theme-grid">
+                  {DARK_THEMES.map(t => (
+                    <button
+                      key={t.id}
+                      className={`sidebar__theme-swatch ${activeTheme === t.id ? "sidebar__theme-swatch--active" : ""}`}
+                      onClick={() => handleThemeChange(t)}
+                      title={t.label}
+                      style={{ background: t.vars["--bg-b"] }}
+                    >
+                      <span>{t.emoji}</span>
+                      <span>{t.label}</span>
+                    </button>
+                  ))}
+                </div>
+                <div className="sidebar__theme-label">☀️ Bright</div>
+                <div className="sidebar__theme-grid">
+                  {BRIGHT_THEMES.map(t => (
+                    <button
+                      key={t.id}
+                      className={`sidebar__theme-swatch ${activeTheme === t.id ? "sidebar__theme-swatch--active" : ""}`}
+                      onClick={() => handleThemeChange(t)}
+                      title={t.label}
+                      style={{ background: `linear-gradient(135deg, ${t.vars["--bg-a"]}, ${t.vars["--bg-b"]})` }}
+                    >
+                      <span>{t.emoji}</span>
+                      <span>{t.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="sidebar__divider" />
 
@@ -300,9 +340,6 @@ export default function App() {
         <div className="mode-content">
           {renderMode()}
         </div>
-
-        {/* ── Mode Dock ── */}
-        <ModeDock activeMode={activeMode} onModeChange={handleModeChange} />
       </div>
     </>
   );
