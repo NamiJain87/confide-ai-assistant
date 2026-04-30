@@ -10,13 +10,14 @@ const MOOD_PLAYLISTS = {
   calm:     { id: "PLMpM3Z0SVgJFqHHMvsZRDauhBEhJMt8Tb", label: "Peaceful Ambient 🌙" },
 };
 
+// Quick vibes — each maps to a real YouTube playlist ID
 const QUICK_VIBES = [
-  { query: "lofi hip hop study beats",    label: "📚 Study"    },
-  { query: "morning motivation music",    label: "☀️ Morning"  },
-  { query: "workout gym music 2024",      label: "🏋️ Workout"  },
-  { query: "deep sleep music relaxing",   label: "😴 Sleep"    },
-  { query: "bollywood songs 2024",        label: "🎬 Bollywood" },
-  { query: "top hits pop music 2024",     label: "🎤 Pop Hits" },
+  { id: "PLjP1oCxfMWzME5E1YFuGkLGRYEbWbGfkc", label: "📚 Study"    },
+  { id: "PLbpi7G2chBhxKp9PuJf38A7aefvuDIQUh", label: "☀️ Morning"  },
+  { id: "PLw-VjHDlEOgs658kAHR_LAaQ8I6WHRRQ1", label: "🏋️ Workout"  },
+  { id: "PLMpM3Z0SVgJFqHHMvsZRDauhBEhJMt8Tb", label: "😴 Sleep"    },
+  { id: "PLFgquLnL59akA2PflFpeQG9L01VFg90wS", label: "🎬 Bollywood" },
+  { id: "PLDfKAXSRaWn23hGkE5eXQHlFrqdYHFHuV", label: "🎤 Pop Hits" },
 ];
 
 export default function MusicMode({ mood = "neutral" }) {
@@ -31,22 +32,22 @@ export default function MusicMode({ mood = "neutral" }) {
     setActiveSearch("");
   }
 
+  function playVibe(vibeId) {
+    setActivePlaylist(vibeId);
+    setActiveSearch("");
+  }
+
   function playSearch(query) {
-    // Check if it's a Youtube URL
-    let videoId = query;
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
     const match = query.match(regExp);
     if (match && match[2].length === 11) {
-      videoId = match[2];
+      setActiveSearch(match[2]);
+      setActivePlaylist(null);
     } else {
-      // It's just a text query, but since search doesn't work, we'll try to just show a generic playlist or error
-      // Actually, we can prompt them to use a URL.
-      alert("Please paste a valid YouTube Video URL.");
-      return;
+      alert("Please paste a valid YouTube Video URL (e.g. https://youtube.com/watch?v=...)");
     }
-    setActiveSearch(videoId);
-    setActivePlaylist(null);
   }
+
 
   const embedSrc = activePlaylist
     ? `https://www.youtube.com/embed/videoseries?list=${activePlaylist}&autoplay=1`
@@ -74,7 +75,7 @@ export default function MusicMode({ mood = "neutral" }) {
       <div className="music__section-label">Quick Vibes</div>
       <div className="music__quick-grid">
         {QUICK_VIBES.map((v) => (
-          <button key={v.query} className="music__vibe-btn" onClick={() => playSearch(v.query)}>
+          <button key={v.id} className="music__vibe-btn" onClick={() => playVibe(v.id)}>
             {v.label}
           </button>
         ))}

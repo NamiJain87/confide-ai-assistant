@@ -4,7 +4,7 @@ import ChatWindow from "./components/ChatWindow";
 import InputBar from "./components/InputBar";
 import ThemeBar from "./components/ThemeBar";
 import CreateBotModal from "./components/CreateBotModal";
-import ModeDock from "./components/ModeDock";
+import ModeDock, { MODES } from "./components/ModeDock";
 import YouTubeMode from "./components/modes/YouTubeMode";
 import MusicMode from "./components/modes/MusicMode";
 import DocsMode from "./components/modes/DocsMode";
@@ -22,7 +22,7 @@ const MOOD_LABELS = {
 };
 
 export default function App() {
-  const { 
+  const {
     messages, loading, error, mood, sendMessage, clearChat, setBotConfig,
     sessions, currentSessionId, loadSession, deleteSession
   } = useChat();
@@ -32,6 +32,7 @@ export default function App() {
   const [showSidebar,     setShowSidebar]     = useState(false);
   const [botConfig,       setBotConfigState]  = useState(null);
   const [activeMode,      setActiveMode]      = useState("chat");
+  const [splitScreen,     setSplitScreen]     = useState(false);
 
   const moodInfo    = MOOD_LABELS[mood] || MOOD_LABELS.neutral;
   const displayName = botConfig ? `${botConfig.avatar} ${botConfig.name}` : "Confide";
@@ -65,18 +66,30 @@ export default function App() {
     URL.revokeObjectURL(url);
   }
 
+  function handleModeChange(modeId) {
+    setActiveMode(modeId);
+    // Reset split screen when switching away from music
+    if (modeId !== "music") setSplitScreen(false);
+    if (window.innerWidth < 768) setShowSidebar(false);
+  }
+
   function renderMode() {
     switch (activeMode) {
       case "youtube":  return <YouTubeMode />;
-      case "music":    return (
-        <div className="split-mode">
-          <MusicMode mood={mood} />
-          <div className="split-mode__chat">
-            <ChatWindow messages={messages} loading={loading} error={error} />
-            <InputBar onSend={sendMessage} loading={loading} />
+      case "music":
+        return splitScreen ? (
+          <div className="split-mode">
+            <MusicMode mood={mood} />
+            <div className="split-mode__chat">
+              <ChatWindow messages={messages} loading={loading} error={error} />
+              <InputBar onSend={sendMessage} loading={loading} />
+            </div>
           </div>
-        </div>
-      );
+        ) : (
+          <>
+            <MusicMode mood={mood} />
+          </>
+        );
       case "docs":     return <DocsMode />;
       case "ppt":      return <PPTMode />;
       case "tasks":    return <TasksMode />;
@@ -116,10 +129,10 @@ export default function App() {
         {/* ── Header ── */}
         <header className="header">
           <div className="header__left">
-            <button 
-              className="header__menu-btn" 
+            <button
+              className="header__menu-btn"
               onClick={() => setShowSidebar(true)}
-              aria-label="Open chat history"
+              aria-label="Open menu"
               style={{ background: "transparent", border: "none", fontSize: "24px", color: "var(--text)", cursor: "pointer", marginRight: "10px" }}
             >
               ☰
@@ -142,79 +155,123 @@ export default function App() {
             <div className="header__status" aria-label={`Current mood: ${mood}`}>
               <span className="header__status-dot" />
               <span className="header__mood-emoji">{moodInfo.emoji}</span>
-              <span>{moodInfo.label}</span>
+              <span className="header__mood-label">{moodInfo.label}</span>
             </div>
 
-            {/* Create Bot button */}
-            <button
-              id="create-bot-button"
-              className="header__bot-btn"
-              onClick={() => setShowBotModal(true)}
-              aria-label="Create personal AI bot"
-              title="Create your AI bot"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="13" height="13">
-                <circle cx="12" cy="8" r="4"/>
-                <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
-                <line x1="19" y1="3" x2="19" y2="9"/><line x1="16" y1="6" x2="22" y2="6"/>
-              </svg>
-              {botConfig ? "Edit Bot" : "My Bot"}
-            </button>
-
-            {/* Clear & Save buttons — only on chat */}
+            {/* Save button — quick access */}
             {activeMode === "chat" && (
-              <div style={{ display: "flex", gap: "8px" }}>
-                <button
-                  id="save-chat-button"
-                  className="header__clear-btn"
-                  onClick={downloadChatHistory}
-                  aria-label="Save conversation"
-                  title="Save conversation"
-                  style={{ background: "var(--surface-hover)", borderColor: "var(--glass-border)", color: "var(--text)" }}
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="13" height="13">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="7 10 12 15 17 10"></polyline>
-                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                  </svg>
-                  Save
-                </button>
-
-                <button
-                  id="clear-chat-button"
-                  className="header__clear-btn"
-                  onClick={clearChat}
-                  aria-label="New chat"
-                  title="New chat"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="13" height="13">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                  </svg>
-                  New Chat
-                </button>
-              </div>
+              <button
+                id="save-chat-button"
+                className="header__clear-btn"
+                onClick={downloadChatHistory}
+                aria-label="Save conversation"
+                title="Save conversation"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="13" height="13">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Save
+              </button>
             )}
           </div>
         </header>
 
-        {/* ── Sidebar ── */}
+        {/* ── Sidebar Overlay ── */}
         {showSidebar && (
           <div className="sidebar-overlay" onClick={() => setShowSidebar(false)} />
         )}
+
+        {/* ── Sidebar ── */}
         <div className={`sidebar ${showSidebar ? "sidebar--open" : ""}`}>
           <div className="sidebar__header">
-            <h2>Chat History</h2>
+            <h2>Menu</h2>
             <button className="sidebar__close" onClick={() => setShowSidebar(false)}>✕</button>
           </div>
+
           <div className="sidebar__list">
-            {sessions.length === 0 && <div style={{padding: "20px", color: "var(--text-muted)", fontSize: "14px"}}>No past chats</div>}
+
+            {/* ── Navigation Modes ── */}
+            <div className="sidebar__section-label">Navigation</div>
+            {MODES.map(m => (
+              <div key={m.id}>
+                <button
+                  className={`sidebar__mode-btn ${activeMode === m.id ? "sidebar__mode-btn--active" : ""}`}
+                  onClick={() => handleModeChange(m.id)}
+                >
+                  <span className="sidebar__mode-icon">{m.icon}</span>
+                  <span className="sidebar__mode-label-text">{m.label}</span>
+                  {m.id === "music" && (
+                    <span className="sidebar__mode-arrow">
+                      {activeMode === "music" ? "▾" : "▸"}
+                    </span>
+                  )}
+                </button>
+
+                {/* ── Music Split Screen Sub-option ── */}
+                {m.id === "music" && activeMode === "music" && (
+                  <div className="sidebar__subsection">
+                    <button
+                      className={`sidebar__split-btn ${splitScreen ? "sidebar__split-btn--active" : ""}`}
+                      onClick={() => setSplitScreen(s => !s)}
+                    >
+                      <span>{splitScreen ? "✕" : "⊡"}</span>
+                      <span>{splitScreen ? "Exit Split Screen" : "Split Screen + Chat"}</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+
+            <div className="sidebar__divider" />
+
+            {/* ── Personalise ── */}
+            <div className="sidebar__section-label">Personalise</div>
+
+            <button
+              className="sidebar__action-btn"
+              onClick={() => { setShowBotModal(true); setShowSidebar(false); }}
+            >
+              <span>🤖</span>
+              <span>{botConfig ? "Edit My Bot" : "Create My Bot"}</span>
+            </button>
+
+            <button
+              className="sidebar__action-btn"
+              onClick={() => setShowSidebar(false)}
+              title="Click the 🎨 tab on the left edge of the screen"
+            >
+              <span>🎨</span>
+              <span>Theme &amp; Mood</span>
+              <span className="sidebar__action-hint">← side tab</span>
+            </button>
+
+            <div className="sidebar__divider" />
+
+            {/* ── Chat History ── */}
+            <div className="sidebar__section-label sidebar__section-label--row">
+              <span>Chat History</span>
+              <button
+                className="sidebar__new-chat-btn"
+                onClick={() => { clearChat(); setShowSidebar(false); setActiveMode("chat"); }}
+              >
+                + New Chat
+              </button>
+            </div>
+
+            {sessions.length === 0 && (
+              <div style={{ padding: "10px 4px", color: "var(--text-muted)", fontSize: "13px" }}>
+                No past chats yet
+              </div>
+            )}
             {sessions.map(s => (
-              <div 
-                key={s.id} 
+              <div
+                key={s.id}
                 className={`sidebar__item ${s.id === currentSessionId ? "sidebar__item--active" : ""}`}
                 onClick={() => {
                   loadSession(s.id);
+                  setActiveMode("chat");
                   if (window.innerWidth < 768) setShowSidebar(false);
                 }}
               >
@@ -222,12 +279,9 @@ export default function App() {
                   <div className="sidebar__item-title">{s.title}</div>
                   <div className="sidebar__item-date">{new Date(s.date).toLocaleDateString()}</div>
                 </div>
-                <button 
-                  className="sidebar__item-delete" 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    deleteSession(s.id);
-                  }}
+                <button
+                  className="sidebar__item-delete"
+                  onClick={(e) => { e.stopPropagation(); deleteSession(s.id); }}
                   title="Delete chat"
                 >
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" width="16" height="16">
@@ -238,6 +292,7 @@ export default function App() {
                 </button>
               </div>
             ))}
+
           </div>
         </div>
 
@@ -247,7 +302,7 @@ export default function App() {
         </div>
 
         {/* ── Mode Dock ── */}
-        <ModeDock activeMode={activeMode} onModeChange={setActiveMode} />
+        <ModeDock activeMode={activeMode} onModeChange={handleModeChange} />
       </div>
     </>
   );

@@ -1168,3 +1168,74 @@ body {
 .sidebar__item-delete { background:none; border:none; color:var(--text-muted); cursor:pointer; padding:6px; border-radius:6px; opacity:0; transition:all 0.2s; }
 .sidebar__item:hover .sidebar__item-delete { opacity:1; }
 .sidebar__item-delete:hover { background:var(--error-bg, #ffebee); color:var(--error, #e53935); }
+
+/* ── Sidebar: Section Labels ── */
+.sidebar__section-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 1.4px;
+  text-transform: uppercase; color: var(--text-muted);
+  padding: 12px 4px 6px;
+}
+.sidebar__section-label--row {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.sidebar__divider { height: 1px; background: var(--glass-border); margin: 8px 0; }
+
+/* ── Sidebar: Mode Buttons ── */
+.sidebar__mode-btn {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; padding: 10px 12px; border-radius: 12px;
+  border: none; background: transparent; cursor: pointer;
+  font-family: var(--font-body); font-size: 14px; font-weight: 500;
+  color: var(--text); text-align: left; transition: all 0.2s;
+}
+.sidebar__mode-btn:hover { background: var(--surface-hover); }
+.sidebar__mode-btn--active {
+  background: var(--glow-a);
+  box-shadow: 0 0 0 1.5px var(--accent-a);
+  color: var(--accent-a);
+}
+.sidebar__mode-icon { font-size: 18px; flex-shrink: 0; }
+.sidebar__mode-label-text { flex: 1; }
+.sidebar__mode-arrow { font-size: 12px; color: var(--text-faint); flex-shrink: 0; }
+
+/* ── Sidebar: Split Screen Sub-option ── */
+.sidebar__subsection { padding: 4px 0 4px 28px; }
+.sidebar__split-btn {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%; padding: 8px 12px; border-radius: 10px;
+  border: 1.5px solid var(--glass-border); background: var(--surface);
+  cursor: pointer; font-family: var(--font-body); font-size: 13px;
+  color: var(--text-muted); transition: all 0.2s;
+}
+.sidebar__split-btn:hover { border-color: var(--accent-a); color: var(--accent-a); background: var(--surface-hover); }
+.sidebar__split-btn--active {
+  background: var(--glow-a); border-color: var(--accent-a);
+  color: var(--accent-a); font-weight: 600;
+}
+
+/* ── Sidebar: Action Buttons (My Bot, Theme) ── */
+.sidebar__action-btn {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; padding: 10px 12px; border-radius: 12px;
+  border: none; background: transparent; cursor: pointer;
+  font-family: var(--font-body); font-size: 14px; font-weight: 500;
+  color: var(--text); text-align: left; transition: all 0.2s;
+}
+.sidebar__action-btn:hover { background: var(--surface-hover); }
+.sidebar__action-hint { margin-left: auto; font-size: 10px; color: var(--text-faint); }
+
+/* ── Sidebar: New Chat Button ── */
+.sidebar__new-chat-btn {
+  padding: 4px 10px; border-radius: 8px;
+  background: linear-gradient(135deg, var(--accent-a), var(--accent-b));
+  border: none; color: #fff; font-size: 11px; font-weight: 600;
+  font-family: var(--font-body); cursor: pointer; transition: transform 0.2s;
+}
+.sidebar__new-chat-btn:hover { transform: scale(1.05); }
+
+/* ── Header: hide mood label text on very small screens ── */
+@media (max-width: 430px) {
+  .header__mood-label { display: none; }
+  .header__status { padding: 5px 8px; }
+}
+
