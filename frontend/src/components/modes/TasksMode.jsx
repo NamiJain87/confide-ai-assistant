@@ -15,16 +15,47 @@ function requestNotifPermission() {
   }
 }
 
+function playReminderMusic() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const playNote = (freq, startTime, duration) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + startTime);
+      gain.gain.setValueAtTime(0, ctx.currentTime + startTime);
+      gain.gain.linearRampToValueAtTime(0.2, ctx.currentTime + startTime + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + startTime + duration);
+      osc.start(ctx.currentTime + startTime);
+      osc.stop(ctx.currentTime + startTime + duration);
+    };
+    // Play a pleasant alert chime
+    playNote(523.25, 0, 0.5);
+    playNote(659.25, 0.15, 0.5);
+    playNote(783.99, 0.3, 0.5);
+    playNote(1046.50, 0.45, 1.0);
+  } catch (e) { console.warn("AudioContext not supported", e); }
+}
+
+const activeTimeouts = {};
+
 function scheduleNotif(task) {
-  if (!task.deadline || Notification.permission !== "granted") return;
+  if (!task.deadline || Notification.permission !== "granted" || task.status === "done") return;
+  if (activeTimeouts[task.id]) clearTimeout(activeTimeouts[task.id]);
+
   const ms = new Date(task.deadline).getTime() - Date.now();
   if (ms <= 0) return;
-  setTimeout(() => {
+
+  activeTimeouts[task.id] = setTimeout(() => {
     new Notification(`⏰ Task Due: ${task.text}`, {
-      body: "Your task deadline has arrived!",
+      body: "It's time to complete this task! 💪",
       icon: "/favicon.ico",
     });
-    if (navigator.vibrate) navigator.vibrate([300, 100, 300]);
+    if (navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 300]);
+    playReminderMusic();
+    delete activeTimeouts[task.id];
   }, ms);
 }
 
@@ -36,8 +67,36 @@ export default function TasksMode() {
   const [filter,   setFilter]   = useState("all");
   const [aiLoading, setAiLoading] = useState(false);
 
-  useEffect(() => { requestNotifPermission(); }, []);
+  useEffect(() => { 
+    requestNotifPermission(); 
+    // Schedule all pending tasks with deadlines on mount
+    tasks.forEach(scheduleNotif);
+  }, []); // eslint-disable-line
+
   useEffect(() => { saveTasks(tasks); }, [tasks]);
+
+  function notifyPendingSummary() {
+    if (Notification.permission !== "granted") {
+      Notification.requestPermission();
+      alert("Please allow notifications to use this feature.");
+      return;
+    }
+    const pendingTasks = tasks.filter(t => t.status !== "done");
+    if (pendingTasks.length === 0) {
+      alert("No pending tasks to remind you about!");
+      return;
+    }
+    
+    let bodyText = pendingTasks.map(t => `• ${t.text}`).join("\n");
+    if (bodyText.length > 150) bodyText = bodyText.slice(0, 147) + "...";
+
+    new Notification(`You have ${pendingTasks.length} pending tasks`, {
+      body: bodyText,
+      icon: "/favicon.ico",
+    });
+    playReminderMusic();
+    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+  }
 
   function addTask(text = input, dl = deadline, pri = priority) {
     if (!text.trim()) return;
@@ -176,9 +235,12 @@ export default function TasksMode() {
       </div>
 
       {/* Filter + AI prioritize */}
-      <div className="tasks__toolbar">
+      <div className="tasks__toolbar" style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
         <button className="tasks__ai-btn" onClick={aiPrioritize} disabled={aiLoading || tasks.length < 2}>
           {aiLoading ? "🤔 Thinking…" : "🤖 AI Prioritize (To Do)"}
+        </button>
+        <button className="tasks__ai-btn" style={{ background: "var(--surface-hover)", border: "1px solid var(--glass-border)", color: "var(--text)" }} onClick={notifyPendingSummary}>
+          🔔 Send Pending Summary
         </button>
       </div>
 
