@@ -50,6 +50,20 @@ export default function App() {
     setActiveMode("chat");
   }
 
+  const [pendingTaskCount, setPendingTaskCount] = useState(0);
+
+  useEffect(() => {
+    const checkTasks = () => {
+      try {
+        const tasks = JSON.parse(localStorage.getItem("confide_tasks") || "[]");
+        setPendingTaskCount(tasks.filter(t => t.status !== "done").length);
+      } catch (e) {}
+    };
+    checkTasks();
+    const interval = setInterval(checkTasks, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
   function downloadChatHistory() {
     const textContent = messages
       .filter(m => m.role !== "system")
@@ -207,6 +221,9 @@ export default function App() {
                 >
                   <span className="sidebar__mode-icon">{m.icon}</span>
                   <span className="sidebar__mode-label-text">{m.label}</span>
+                  {m.id === "tasks" && pendingTaskCount > 0 && (
+                    <span className="sidebar__badge">{pendingTaskCount}</span>
+                  )}
                   {m.id === "music" && (
                     <span className="sidebar__mode-arrow">
                       {activeMode === "music" ? "▾" : "▸"}
