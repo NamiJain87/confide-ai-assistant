@@ -1,0 +1,29 @@
+[33mcommit 874710e3bf30d8a8c3073229b0f293061a8f237b[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: NAMIJAIN87 <namijain1510@gmail.com>
+Date:   Wed Apr 29 13:17:51 2026 +0530
+
+    Initial release of Confide AI
+
+[33mcommit 5421e3db24a65af880dd4e9c837b9a241113cf18[m
+Author: NAMIJAIN87 <namijain1510@gmail.com>
+Date:   Wed Apr 29 02:24:48 2026 +0530
+
+    Switch to llama-3.1-8b-instant to bypass Groq rate limits
+
+[33mcommit 7f57845765856465ffa6d4e8a9feb72d45825e8e[m
+Author: NAMIJAIN87 <namijain1510@gmail.com>
+Date:   Wed Apr 29 02:17:21 2026 +0530
+
+    Added ChatGPT-style Multi-Session History Sidebar
+
+[33mcommit ddd8d285cabba706b15a4e785ed91ee8cf77d9ae[m
+Author: NAMIJAIN87 <namijain1510@gmail.com>
+Date:   Wed Apr 29 02:12:28 2026 +0530
+
+    Added Save Chat feature
+
+[33mcommit 1f41c45dde87cd4b72730920b79cfe4865656884[m
+Author: NAMIJAIN87 <namijain1510@gmail.com>
+Date:   Wed Apr 29 02:08:22 2026 +0530
+
+    Confide AI - Modernized Trainer & App Updates
