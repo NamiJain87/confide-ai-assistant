@@ -30,15 +30,32 @@ const STORAGE_KEY = "confide_history";
 const MOOD_KEY    = "confide_mood";
 const SESSIONS_KEY = "confide_sessions";
 
+const WELCOME_MESSAGES = [
+  "Hey! I'm Confide 🤝 — your best friend. Tell me anything, I'm all ears.",
+  "Hey you 👋 — I'm so glad you opened this. Whatever's on your mind, let it out. I'm here.",
+  "Welcome back 🌸 — you've got a safe space here. What's going on today?",
+  "Hi there! ✨ I'm Confide. No judgment, no pressure — just tell me how you're feeling.",
+  "Hey 💙 — I've been waiting for you. What's on your heart today?",
+  "Hello! 🌿 I'm Confide, your personal AI best friend. Talk to me about literally anything.",
+  "You showed up — that already takes courage 🔥. I'm here. What's going on?",
+  "Hey! 🌙 Whether it's 3am or 3pm, I'm always awake and always listening. Spill it.",
+  "Hi! 💬 Think of me as that one friend who never judges and always has time for you. What's up?",
+  "Welcome 🌻 — I'm Confide. Your feelings are valid, your thoughts matter. Talk to me!",
+  "Hey bestie 🤍 — no small talk needed. What's really going on with you today?",
+  "Good to see you 🌈 — I'm Confide. Whether you're happy, sad, or somewhere in between, I'm here.",
+];
+
 function makeDefaultMessages() {
+  const randomMsg = WELCOME_MESSAGES[Math.floor(Math.random() * WELCOME_MESSAGES.length)];
   return [
     {
       role:      "assistant",
-      content:   "Hey! I'm Confide 🤝 — your best friend. Tell me anything, I'm all ears.",
+      content:   randomMsg,
       timestamp: Date.now(),
     },
   ];
 }
+
 
 function generateId() {
   return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
