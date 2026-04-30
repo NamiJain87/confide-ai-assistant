@@ -123,14 +123,14 @@ Rules:
 
       // Bullets
       s.addText(
-        slide.bullets.map((b) => ({ text: b, options: { bullet: true } })),
+        slide.bullets.map((b) => ({ text: b, options: { bullet: true, breakLine: true } })),
         {
-          x: 0.5, y: 1.6, w: 9, h: 3.3,
+          x: 0.5, y: 1.6, w: 9, h: 3.5,
           fontSize: 18,
           color: theme.text,
           fontFace: "Calibri",
           valign: "top",
-          lineSpacing: 28,
+          autoFit: true
         }
       );
 
