@@ -122,14 +122,17 @@ Rules:
       });
 
       // Bullets
-      slide.bullets.forEach((b, bi) => {
-        s.addText(`• ${b}`, {
-          x: 0.5, y: 1.6 + bi * 0.72, w: 9, h: 0.65,
-          fontSize: 16,
+      s.addText(
+        slide.bullets.map((b) => ({ text: b, options: { bullet: true } })),
+        {
+          x: 0.5, y: 1.6, w: 9, h: 3.3,
+          fontSize: 18,
           color: theme.text,
           fontFace: "Calibri",
-        });
-      });
+          valign: "top",
+          lineSpacing: 28,
+        }
+      );
 
       // Confide watermark
       s.addText("✦ Confide", {
