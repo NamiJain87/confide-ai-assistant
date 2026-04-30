@@ -30,8 +30,11 @@ export default function PPTMode() {
     setPreview(null);
 
     try {
-      const prompt = `Create a ${slides}-slide presentation on: "${topic}".
-${words ? `\nCRITICAL INSTRUCTION: Each slide MUST contain EXACTLY ${words} words of content (not less). DO NOT summarize, DO NOT shorten content. You MUST write out exactly ${words} words per slide.` : ""}
+      const prompt = `You are an expert presentation generator. 
+Create a ${slides}-slide presentation based exactly on these instructions:
+"${topic}"
+
+${words ? `CRITICAL INSTRUCTION: Each slide MUST contain EXACTLY ${words} words of content (not less). DO NOT summarize.` : ""}
 
 Return ONLY valid JSON in this exact format (no extra text, no markdown):
 [
@@ -40,11 +43,12 @@ Return ONLY valid JSON in this exact format (no extra text, no markdown):
 ]
 
 Rules:
-- Exactly ${slides} slide objects
-- Each slide has 1 title and multiple bullet points that combine to reach the required word count.
-- First slide is the intro/title slide
-- Last slide is a summary/conclusion
-- DO NOT ignore word limits!`;
+- Exactly ${slides} slide objects.
+- Strictly follow the user's instructions regarding tone, style, and content.
+- Each slide has 1 title and multiple bullet points.
+- First slide is the intro/title slide.
+- Last slide is a summary/conclusion.
+- DO NOT ignore the user's instructions!`;
 
       const res = await fetch("/api/chat", {
         method:  "POST",
@@ -149,22 +153,22 @@ Rules:
     <div className="mode-panel">
       <div className="mode-panel__header">
         <span className="mode-panel__title">🎯 PPT Generator</span>
-        <span className="mode-panel__sub">Type a topic → get a real .pptx file instantly</span>
+        <span className="mode-panel__sub">Prompt the AI to write and design a complete .pptx file instantly</span>
       </div>
 
-      {/* Topic */}
-      <div className="docs__input-row">
-        <input
+      {/* Prompt Area */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "16px" }}>
+        <textarea
           className="docs__input"
-          placeholder="e.g. Machine Learning, Climate Change, Business Plan…"
+          style={{ minHeight: "100px", resize: "vertical", padding: "12px", lineHeight: "1.5" }}
+          placeholder="Describe your presentation... e.g. 'Make a fun, high-energy pitch deck for a new AI startup. Include a slide about the market size and another about our team. Explain it so a 5-year-old would understand.'"
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && generate()}
         />
         <input
           className="docs__input"
-          style={{ width: "160px" }}
-          placeholder="Words per slide"
+          style={{ width: "100%" }}
+          placeholder="Words per slide (Optional, leave blank for automatic)"
           type="number"
           value={words}
           onChange={(e) => setWords(e.target.value)}
